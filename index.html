@@ -4,28 +4,31 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Запис до салону (демо)</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3">
+<link href="https://fonts.googleapis.com/css2?family=Alumni+Sans:wght@600;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="site.css?v=6">
 </head>
-<body>
-<div class="wrap">
-  <header>
-    <span class="demo" id="demo"></span>
+<body class="site">
+<header class="top">
+  <div class="in">
+    <div class="brand"><span id="brand"></span><span class="demo" id="demo"></span></div>
+    <nav id="nav"></nav>
     <button id="lang" type="button"></button>
-  </header>
-  <main id="app"><p>Завантажуємо…</p></main>
-</div>
+  </div>
+</header>
+<main id="app"><p>Завантажуємо…</p></main>
+<footer id="foot"></footer>
 
-<script src="shared.js?v=3"></script>
+<script src="shared.js?v=5"></script>
 <script>
 
 const T = {
-  uk: { demo:'Демо: приклад даних', other:'Русский', hours:'Щодня', team:'Наші майстри', place:'Де ми', phoneLabel:'Телефон', map:'Відкрити на карті', writeTg:'Написати в Telegram', reviews:'Відгуки', social:'Ми в соцмережах', noLink:'посилання ще не додано', services:'Послуги', min:'хв', cur:'грн',
+  uk: { demo:'Демо: приклад даних', other:'Русский', hours:'Щодня', team:'Наші майстри', place:'Де ми', phoneLabel:'Телефон', addressLabel:'Адреса', map:'Відкрити на карті', writeTg:'Написати в Telegram', reviews:'Відгуки', social:'Ми в соцмережах', noLink:'посилання ще не додано', photos:'Фото ілюстративні: Unsplash', services:'Послуги', min:'хв', cur:'грн',
     book:'Записатися', next:'Далі', back:'Назад', confirm:'Підтвердити запис', done:'Ви записані', cancel:'Скасувати запис', cancelled:'Запис скасовано',
     empty:'Вільного часу немає, оберіть інший день', taken:'Цей час уже зайнятий, оберіть інший', error:'Не вдалося. Спробуйте ще раз',
     service:'Оберіть послугу', master:'Оберіть майстра', time:'Оберіть день і час', contact:'Ваші дані', name:"Ім'я", phone:'Телефон', fill:"Вкажіть ім'я та телефон (щонайменше 9 цифр)",
     link:'Збережіть посилання, щоб скасувати запис:', home:'На головну', notFound:'Запис не знайдено' },
-  ru: { demo:'Демо: пример данных', other:'Українська', hours:'Ежедневно', team:'Наши мастера', place:'Где мы', phoneLabel:'Телефон', map:'Открыть на карте', writeTg:'Написать в Telegram', reviews:'Отзывы', social:'Мы в соцсетях', noLink:'ссылка ещё не добавлена', services:'Услуги', min:'мин', cur:'грн',
+  ru: { demo:'Демо: пример данных', other:'Українська', hours:'Ежедневно', team:'Наши мастера', place:'Где мы', phoneLabel:'Телефон', addressLabel:'Адрес', map:'Открыть на карте', writeTg:'Написать в Telegram', reviews:'Отзывы', social:'Мы в соцсетях', noLink:'ссылка ещё не добавлена', photos:'Фото иллюстративные: Unsplash', services:'Услуги', min:'мин', cur:'грн',
     book:'Записаться', next:'Далее', back:'Назад', confirm:'Подтвердить запись', done:'Вы записаны', cancel:'Отменить запись', cancelled:'Запись отменена',
     empty:'Свободного времени нет, выберите другой день', taken:'Это время уже занято, выберите другое', error:'Не получилось. Попробуйте ещё раз',
     service:'Выберите услугу', master:'Выберите мастера', time:'Выберите день и время', contact:'Ваши данные', name:'Имя', phone:'Телефон', fill:'Укажите имя и телефон (не меньше 9 цифр)',
@@ -81,42 +84,54 @@ const screens = {
   home: () => {
     const info = DB.info, address = info['address_' + lang];
     const digits = info.phone.replace(/[^\d+]/g, ''), tg = info.telegram.replace(/^.*t\.me\/|@/g, '').replace(/\W/g, '');
-    const link = (text, href) => el('p', {}, el('a', { textContent:text, href, target:'_blank', rel:'noopener' }));
-    const book = () => button(t('book'), () => { draft = {}; go('service'); }, 'primary');
+    const link = (textContent, href) => el('a', { textContent, href, target:'_blank', rel:'noopener' });
+    const h = (tag, textContent) => el(tag, { textContent });
+    const book = () => button(t('book'), startBooking, 'primary');
+    const fact = (label, value) => el('div', {}, h('dt', label), el('dd', {}, value));
+    const social = DB.social.on ? DB.social.items.map(s => {
+      const url = s.url.trim();
+      // всё без http(s) получает https://, чтобы нельзя было вставить javascript:
+      return url ? link(s.name, /^https?:\/\//i.test(url) ? url : 'https://' + url) : el('span', { textContent:`${s.name}: ${t('noLink')}` });
+    }) : [];
     return [
-      el('h1', { textContent:info['name_' + lang] }),
-      el('p', { textContent:info['about_' + lang] }),
-      el('h2', { textContent:t('services') }),
-      ...SERVICES.map(s => el('div', { className:'card row' }, el('span', { textContent:s[lang] }), el('span', { textContent:price(s) }))),
-      book(),
-      el('h2', { textContent:t('team') }),
-      ...MASTERS.map(m => el('div', { className:'card' },
-        el('strong', { textContent:m[lang] }),
-        el('p', { textContent:m['about_' + lang] || '' }))),
-      ...(DB.reviews.on && DB.reviews.items.length ? [
-        el('h2', { textContent:t('reviews') }),
-        ...DB.reviews.items.map(r => el('div', { className:'card' }, el('p', { textContent:r.text }), el('p', { className:'off', textContent:r.author })))
-      ] : []),
-      el('h2', { textContent:t('place') }),
-      el('div', { className:'card' },
-        el('p', { textContent:address }),
-        el('p', { textContent:`${t('hours')} ${SALON.open}:00–${SALON.close}:00` }),
-        link(t('map'), 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address)),
-        // номер-заглушка с XX не превращается в ссылку
-        digits.replace('+', '').length >= 9
-          ? el('p', {}, `${t('phoneLabel')}: `, el('a', { textContent:info.phone, href:'tel:' + digits }))
-          : el('p', { textContent:`${t('phoneLabel')}: ${info.phone}` }),
-        tg && link(t('writeTg'), 'https://t.me/' + tg)),
-      ...(DB.social.on && DB.social.items.length ? [
-        el('h2', { textContent:t('social') }),
-        el('div', { className:'card' }, ...DB.social.items.map(s => {
-          const url = s.url.trim();
-          // всё без http(s) получает https://, чтобы нельзя было вставить javascript:
-          return url ? link(s.name, /^https?:\/\//i.test(url) ? url : 'https://' + url) : el('p', { textContent:`${s.name}: ${t('noLink')}` });
-        }))
-      ] : []),
-      book()
-    ];
+      el('div', { className:'hero' },
+        photo(PHOTOS.hero, 1920, '', 'eager'),
+        el('div', {},
+          h('h1', info['name_' + lang]),
+          h('p', info['about_' + lang]),
+          el('p', { className:'meta', textContent:`${address} · ${t('hours')} ${SALON.open}:00–${SALON.close}:00` }))),
+      el('section', { id:'services', className:'split' },
+        photo(PHOTOS.tools, 900, 'shot'),
+        el('div', {}, h('h2', t('services')),
+          el('ul', { className:'menu' }, ...SERVICES.map(s => el('li', {},
+            el('button', { type:'button', onclick:() => { draft = { service:s.id }; go('service'); } },
+              el('span', { className:'line' },
+                el('span', { className:'name', textContent:s[lang] }),
+                el('span', { className:'dots' }),
+                el('span', { className:'cost', textContent:`${s.price} ${t('cur')}` })),
+              el('span', { className:'dur', textContent:`${s.min} ${t('min')}` }))))),
+          book())),
+      el('section', { id:'team' }, h('h2', t('team')),
+        el('div', { className:'masters' }, ...MASTERS.map((m, i) => el('figure', {},
+          photo(PHOTOS.masters[i % PHOTOS.masters.length], 700),
+          el('figcaption', {}, h('h3', m[lang]), h('p', m['about_' + lang] || '')))))),
+      DB.reviews.on && DB.reviews.items.length &&
+        el('section', { id:'reviews', className:'quotes' }, h('h2', t('reviews')),
+          el('div', { className:'list' }, ...DB.reviews.items.map(r => el('blockquote', {}, h('p', r.text), h('cite', r.author))))),
+      el('section', { id:'place', className:'split' },
+        el('div', {}, h('h2', t('place')),
+          el('dl', { className:'facts' },
+            fact(t('addressLabel'), address),
+            fact(t('hours'), `${SALON.open}:00–${SALON.close}:00`),
+            // номер-заглушка с XX не превращается в ссылку
+            fact(t('phoneLabel'), digits.replace('+', '').length >= 9 ? el('a', { textContent:info.phone, href:'tel:' + digits }) : info.phone)),
+          el('div', { className:'links' },
+            link(t('map'), 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address)),
+            tg && link(t('writeTg'), 'https://t.me/' + tg)),
+          social.length && h('h3', t('social')),
+          social.length && el('div', { className:'links' }, ...social)),
+        photo(PHOTOS.chair, 900, 'shot'))
+    ].filter(Boolean);
   },
   service: () => [
     el('h2', { textContent:t('service') }),
@@ -201,7 +216,32 @@ function confirmBooking() {
   } catch (e) { error = 'error'; render(); }
 }
 
+// Временные стоковые фото (Unsplash) — заменить на фото салона
+const PHOTOS = {
+  hero:'photo-1585747860715-2ba37e788b70', tools:'photo-1621605815971-fbc98d665033', chair:'photo-1503951914875-452162b0f3f1',
+  masters:['photo-1647140655214-e4a2d914971f', 'photo-1599351431202-1e0f0137899a']
+};
+const photo = (id, width, className = '', loading = 'lazy') =>
+  el('img', { loading, className, alt:'', src:`https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=75` });
+const startBooking = () => { draft = {}; go('service'); };
+function scrollToSection(id) {
+  if (screen !== 'home') { history.replaceState(null, '', location.pathname); go('home'); }
+  document.getElementById(id)?.scrollIntoView();
+}
+function renderChrome() {
+  const items = [['services', 'services'], ['team', 'team'],
+    DB.reviews.on && DB.reviews.items.length && ['reviews', 'reviews'], ['place', 'place']].filter(Boolean);
+  document.getElementById('brand').textContent = DB.info['name_' + lang];
+  document.getElementById('nav').replaceChildren(...items.map(([id, key]) => button(t(key), () => scrollToSection(id))));
+  document.getElementById('foot').replaceChildren(
+    el('strong', { textContent:DB.info['name_' + lang] }),
+    el('p', { textContent:`${DB.info['address_' + lang]} · ${DB.info.phone}` }),
+    el('p', { textContent:t('photos') }));
+  app.className = screen === 'home' ? '' : 'narrow';
+}
+
 function render() {
+  renderChrome();
   document.documentElement.lang = lang;
   document.getElementById('demo').textContent = t('demo');
   document.getElementById('lang').textContent = t('other');
