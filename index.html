@@ -20,12 +20,12 @@
 <script>
 
 const T = {
-  uk: { demo:'Демо: приклад даних', other:'Русский', title:'Назва салону', address:'Адреса: вулиця, будинок', hours:'Щодня', services:'Послуги', min:'хв', cur:'грн',
+  uk: { demo:'Демо: приклад даних', other:'Русский', hours:'Щодня', team:'Наші майстри', place:'Де ми', phoneLabel:'Телефон', map:'Відкрити на карті', writeTg:'Написати в Telegram', services:'Послуги', min:'хв', cur:'грн',
     book:'Записатися', next:'Далі', back:'Назад', confirm:'Підтвердити запис', done:'Ви записані', cancel:'Скасувати запис', cancelled:'Запис скасовано',
     empty:'Вільного часу немає, оберіть інший день', taken:'Цей час уже зайнятий, оберіть інший', error:'Не вдалося. Спробуйте ще раз',
     service:'Оберіть послугу', master:'Оберіть майстра', time:'Оберіть день і час', contact:'Ваші дані', name:"Ім'я", phone:'Телефон', fill:"Вкажіть ім'я та телефон (щонайменше 9 цифр)",
     link:'Збережіть посилання, щоб скасувати запис:', home:'На головну', notFound:'Запис не знайдено' },
-  ru: { demo:'Демо: пример данных', other:'Українська', title:'Название салона', address:'Адрес: улица, дом', hours:'Ежедневно', services:'Услуги', min:'мин', cur:'грн',
+  ru: { demo:'Демо: пример данных', other:'Українська', hours:'Ежедневно', team:'Наши мастера', place:'Где мы', phoneLabel:'Телефон', map:'Открыть на карте', writeTg:'Написать в Telegram', services:'Услуги', min:'мин', cur:'грн',
     book:'Записаться', next:'Далее', back:'Назад', confirm:'Подтвердить запись', done:'Вы записаны', cancel:'Отменить запись', cancelled:'Запись отменена',
     empty:'Свободного времени нет, выберите другой день', taken:'Это время уже занято, выберите другое', error:'Не получилось. Попробуйте ещё раз',
     service:'Выберите услугу', master:'Выберите мастера', time:'Выберите день и время', contact:'Ваши данные', name:'Имя', phone:'Телефон', fill:'Укажите имя и телефон (не меньше 9 цифр)',
@@ -78,14 +78,34 @@ const summary = b => el('div', { className:'card' },
   el('p', { textContent:`${dayLabel(b.date)}, ${hhmm(b.start)}` }));
 
 const screens = {
-  home: () => [
-    el('h1', { textContent:t('title') }),
-    el('p', { textContent:t('address') }),
-    el('p', { textContent:`${t('hours')} ${SALON.open}:00–${SALON.close}:00` }),
-    el('h2', { textContent:t('services') }),
-    ...SERVICES.map(s => el('div', { className:'card row' }, el('span', { textContent:s[lang] }), el('span', { textContent:price(s) }))),
-    button(t('book'), () => { draft = {}; go('service'); }, 'primary')
-  ],
+  home: () => {
+    const info = DB.info, address = info['address_' + lang];
+    const digits = info.phone.replace(/[^\d+]/g, ''), tg = info.telegram.replace(/^.*t\.me\/|@/g, '').replace(/\W/g, '');
+    const link = (text, href) => el('p', {}, el('a', { textContent:text, href, target:'_blank', rel:'noopener' }));
+    const book = () => button(t('book'), () => { draft = {}; go('service'); }, 'primary');
+    return [
+      el('h1', { textContent:info['name_' + lang] }),
+      el('p', { textContent:info['about_' + lang] }),
+      el('h2', { textContent:t('services') }),
+      ...SERVICES.map(s => el('div', { className:'card row' }, el('span', { textContent:s[lang] }), el('span', { textContent:price(s) }))),
+      book(),
+      el('h2', { textContent:t('team') }),
+      ...MASTERS.map(m => el('div', { className:'card' },
+        el('strong', { textContent:m[lang] }),
+        el('p', { textContent:m['about_' + lang] || '' }))),
+      el('h2', { textContent:t('place') }),
+      el('div', { className:'card' },
+        el('p', { textContent:address }),
+        el('p', { textContent:`${t('hours')} ${SALON.open}:00–${SALON.close}:00` }),
+        link(t('map'), 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address)),
+        // номер-заглушка с XX не превращается в ссылку
+        digits.replace('+', '').length >= 9
+          ? el('p', {}, `${t('phoneLabel')}: `, el('a', { textContent:info.phone, href:'tel:' + digits }))
+          : el('p', { textContent:`${t('phoneLabel')}: ${info.phone}` }),
+        tg && link(t('writeTg'), 'https://t.me/' + tg)),
+      book()
+    ];
+  },
   service: () => [
     el('h2', { textContent:t('service') }),
     ...SERVICES.map(s => option(s[lang], price(s), draft.service === s.id, () => { draft.service = s.id; delete draft.start; render(); })),

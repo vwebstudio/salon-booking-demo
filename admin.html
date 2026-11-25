@@ -20,14 +20,14 @@
 <script>
 const T = {
   uk: { demo:'Демо: без справжнього входу', other:'Русский', login:'Увійти через Telegram', admin:'Сторінка майстра', schedule:'Розклад', services:'Послуги та години', masters:'Майстри',
-    master:'Майстер', day:'День', none:'Записів немає', cancel:'Скасувати запис', sure:'Підтвердити скасування', warn:'Попередьте клієнта телефоном', cancelled:'Запис скасовано',
+    salon:'Про салон', salonName:'Назва салону', about:'Опис', address:'Адреса', phoneSalon:'Телефон салону', tgSalon:'Telegram салону', master:'Майстер', day:'День', none:'Записів немає', cancel:'Скасувати запис', sure:'Підтвердити скасування', warn:'Попередьте клієнта телефоном', cancelled:'Запис скасовано',
     add:'Додати запис', service:'Послуга', time:'Час', name:"Ім'я", phone:"Телефон (необов'язково)", empty:'Вільного часу немає, оберіть інший день', taken:'Цей час уже зайнятий, оберіть інший', needName:"Вкажіть ім'я",
-    nameUk:'Назва українською', nameRu:'Назва російською', price:'Ціна, грн', min:'Тривалість, хв', open:'Відкриття, година', close:'Закриття, година', addService:'Додати послугу', addMaster:'Додати майстра',
+    aboutUk:'Опис українською', aboutRu:'Опис російською', nameUk:'Назва українською', nameRu:'Назва російською', price:'Ціна, грн', min:'Тривалість, хв', open:'Відкриття, година', close:'Закриття, година', addService:'Додати послугу', addMaster:'Додати майстра',
     tg:'Telegram-акаунт', remove:'Видалити', save:'Зберегти', saved:'Збережено', check:'Заповніть усі поля коректно', last:'Має залишитися хоча б один пункт', busy:'У майстра є майбутні записи. Спочатку скасуйте їх', error:'Не вдалося. Спробуйте ще раз' },
   ru: { demo:'Демо: без настоящего входа', other:'Українська', login:'Войти через Telegram', admin:'Страница мастера', schedule:'Расписание', services:'Услуги и часы', masters:'Мастера',
-    master:'Мастер', day:'День', none:'Записей нет', cancel:'Отменить запись', sure:'Подтвердить отмену', warn:'Предупредите клиента по телефону', cancelled:'Запись отменена',
+    salon:'О салоне', salonName:'Название салона', about:'Описание', address:'Адрес', phoneSalon:'Телефон салона', tgSalon:'Telegram салона', master:'Мастер', day:'День', none:'Записей нет', cancel:'Отменить запись', sure:'Подтвердить отмену', warn:'Предупредите клиента по телефону', cancelled:'Запись отменена',
     add:'Добавить запись', service:'Услуга', time:'Время', name:'Имя', phone:'Телефон (необязательно)', empty:'Свободного времени нет, выберите другой день', taken:'Это время уже занято, выберите другое', needName:'Укажите имя',
-    nameUk:'Название на украинском', nameRu:'Название на русском', price:'Цена, грн', min:'Длительность, мин', open:'Открытие, час', close:'Закрытие, час', addService:'Добавить услугу', addMaster:'Добавить мастера',
+    aboutUk:'Описание на украинском', aboutRu:'Описание на русском', nameUk:'Название на украинском', nameRu:'Название на русском', price:'Цена, грн', min:'Длительность, мин', open:'Открытие, час', close:'Закрытие, час', addService:'Добавить услугу', addMaster:'Добавить мастера',
     tg:'Telegram-аккаунт', remove:'Удалить', save:'Сохранить', saved:'Сохранено', check:'Заполните все поля корректно', last:'Должен остаться хотя бы один пункт', busy:'У мастера есть будущие записи. Сначала отмените их', error:'Не получилось. Попробуйте ещё раз' }
 };
 
@@ -43,7 +43,7 @@ const dayKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.
 const dayLabel = key => new Date(key + 'T00:00').toLocaleDateString(lang === 'uk' ? 'uk-UA' : 'ru-RU', { weekday:'short', day:'numeric', month:'short' });
 const days = Array.from({ length:SALON.daysAhead }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return dayKey(d); });
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-const copy = () => JSON.parse(JSON.stringify({ open:DB.open, close:DB.close, services:DB.services, masters:DB.masters }));
+const copy = () => JSON.parse(JSON.stringify({ open:DB.open, close:DB.close, info:DB.info, services:DB.services, masters:DB.masters }));
 
 let entered = false, tab = 'schedule', message = '', confirmId = '', work = copy();
 let view = { master:MASTERS[0].id, date:days[0], service:SERVICES[0].id, start:'', name:'', phone:'' };
@@ -55,7 +55,7 @@ function el(tag, props = {}, ...children) {
 }
 const button = (text, onclick, cls = '') => el('button', { type:'button', textContent:text, onclick, className:cls });
 const input = (label, obj, key, type = 'text') => el('label', { textContent:label },
-  el('input', { type, value:obj[key] ?? '', maxLength:60, oninput:e => obj[key] = type === 'number' ? Number(e.target.value) : e.target.value }));
+  el('input', { type, value:obj[key] ?? '', maxLength:key.startsWith('about') ? 300 : 60, oninput:e => obj[key] = type === 'number' ? Number(e.target.value) : e.target.value }));
 const select = (label, value, options, onchange) => el('label', { textContent:label },
   el('select', { onchange:e => { message = ''; onchange(e.target.value); render(); } },
     ...options.map(([v, text]) => el('option', { value:v, textContent:text, selected:String(v) === String(value) }))));
@@ -113,6 +113,7 @@ function persist() {
   const named = x => x.uk.trim() && x.ru.trim();
   const ok = services.every(s => named(s) && s.price > 0 && Number.isInteger(s.min) && s.min > 0)
     && masters.every(named)
+    && ['name_uk', 'name_ru', 'address_uk', 'address_ru'].every(k => work.info[k].trim())
     && Number.isInteger(work.open) && Number.isInteger(work.close) && work.open >= 0 && work.close <= 24 && work.open < work.close;
   if (!ok) { message = 'check'; return render(); }
   localStorage.setItem('salon', JSON.stringify(work));
@@ -139,8 +140,15 @@ const servicesTab = () => [
   button(t('save'), persist, 'primary')
 ];
 const mastersTab = () => [
-  ...editor(work.masters, [['uk','nameUk'], ['ru','nameRu'], ['tg','tg']]),
+  ...editor(work.masters, [['uk','nameUk'], ['ru','nameRu'], ['about_uk','aboutUk'], ['about_ru','aboutRu'], ['tg','tg']]),
   button(t('addMaster'), () => { work.masters.push({ id:newId(), uk:'', ru:'', tg:'' }); render(); }, 'ghost'),
+  button(t('save'), persist, 'primary')
+];
+
+const salonTab = () => [
+  ...[['name_uk','salonName','УКР'], ['name_ru','salonName','РУС'], ['about_uk','about','УКР'], ['about_ru','about','РУС'],
+      ['address_uk','address','УКР'], ['address_ru','address','РУС'], ['phone','phoneSalon'], ['telegram','tgSalon']]
+    .map(([key, label, mark]) => input(mark ? `${t(label)} (${mark})` : t(label), work.info, key)),
   button(t('save'), persist, 'primary')
 ];
 
@@ -152,12 +160,12 @@ function render() {
     if (!entered) {
       app.replaceChildren(el('h1', { textContent:t('admin') }), button(t('login'), () => { entered = true; sessionStorage.setItem('entered', '1'); render(); }, 'primary'));
     } else {
-      const tabs = el('div', { className:'tabs' }, ...['schedule', 'services', 'masters'].map(name => {
+      const tabs = el('div', { className:'tabs' }, ...['schedule', 'services', 'masters', 'salon'].map(name => {
         const b = button(t(name), () => { tab = name; message = ''; confirmId = ''; render(); });
         b.setAttribute('aria-pressed', tab === name);
         return b;
       }));
-      const body = { schedule:scheduleTab, services:servicesTab, masters:mastersTab }[tab]();
+      const body = { schedule:scheduleTab, services:servicesTab, masters:mastersTab, salon:salonTab }[tab]();
       app.replaceChildren(tabs, ...body.filter(Boolean));
     }
     if (message) app.append(el('p', { className: message === 'saved' ? '' : 'error', textContent:t(message), role:'status' }));
