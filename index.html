@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Запис до салону (демо)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 <div class="wrap">
@@ -16,16 +16,16 @@
   <main id="app"><p>Завантажуємо…</p></main>
 </div>
 
-<script src="shared.js?v=2"></script>
+<script src="shared.js?v=3"></script>
 <script>
 
 const T = {
-  uk: { demo:'Демо: приклад даних', other:'Русский', hours:'Щодня', team:'Наші майстри', place:'Де ми', phoneLabel:'Телефон', map:'Відкрити на карті', writeTg:'Написати в Telegram', services:'Послуги', min:'хв', cur:'грн',
+  uk: { demo:'Демо: приклад даних', other:'Русский', hours:'Щодня', team:'Наші майстри', place:'Де ми', phoneLabel:'Телефон', map:'Відкрити на карті', writeTg:'Написати в Telegram', reviews:'Відгуки', social:'Ми в соцмережах', noLink:'посилання ще не додано', services:'Послуги', min:'хв', cur:'грн',
     book:'Записатися', next:'Далі', back:'Назад', confirm:'Підтвердити запис', done:'Ви записані', cancel:'Скасувати запис', cancelled:'Запис скасовано',
     empty:'Вільного часу немає, оберіть інший день', taken:'Цей час уже зайнятий, оберіть інший', error:'Не вдалося. Спробуйте ще раз',
     service:'Оберіть послугу', master:'Оберіть майстра', time:'Оберіть день і час', contact:'Ваші дані', name:"Ім'я", phone:'Телефон', fill:"Вкажіть ім'я та телефон (щонайменше 9 цифр)",
     link:'Збережіть посилання, щоб скасувати запис:', home:'На головну', notFound:'Запис не знайдено' },
-  ru: { demo:'Демо: пример данных', other:'Українська', hours:'Ежедневно', team:'Наши мастера', place:'Где мы', phoneLabel:'Телефон', map:'Открыть на карте', writeTg:'Написать в Telegram', services:'Услуги', min:'мин', cur:'грн',
+  ru: { demo:'Демо: пример данных', other:'Українська', hours:'Ежедневно', team:'Наши мастера', place:'Где мы', phoneLabel:'Телефон', map:'Открыть на карте', writeTg:'Написать в Telegram', reviews:'Отзывы', social:'Мы в соцсетях', noLink:'ссылка ещё не добавлена', services:'Услуги', min:'мин', cur:'грн',
     book:'Записаться', next:'Далее', back:'Назад', confirm:'Подтвердить запись', done:'Вы записаны', cancel:'Отменить запись', cancelled:'Запись отменена',
     empty:'Свободного времени нет, выберите другой день', taken:'Это время уже занято, выберите другое', error:'Не получилось. Попробуйте ещё раз',
     service:'Выберите услугу', master:'Выберите мастера', time:'Выберите день и время', contact:'Ваши данные', name:'Имя', phone:'Телефон', fill:'Укажите имя и телефон (не меньше 9 цифр)',
@@ -93,6 +93,10 @@ const screens = {
       ...MASTERS.map(m => el('div', { className:'card' },
         el('strong', { textContent:m[lang] }),
         el('p', { textContent:m['about_' + lang] || '' }))),
+      ...(DB.reviews.on && DB.reviews.items.length ? [
+        el('h2', { textContent:t('reviews') }),
+        ...DB.reviews.items.map(r => el('div', { className:'card' }, el('p', { textContent:r.text }), el('p', { className:'off', textContent:r.author })))
+      ] : []),
       el('h2', { textContent:t('place') }),
       el('div', { className:'card' },
         el('p', { textContent:address }),
@@ -103,6 +107,14 @@ const screens = {
           ? el('p', {}, `${t('phoneLabel')}: `, el('a', { textContent:info.phone, href:'tel:' + digits }))
           : el('p', { textContent:`${t('phoneLabel')}: ${info.phone}` }),
         tg && link(t('writeTg'), 'https://t.me/' + tg)),
+      ...(DB.social.on && DB.social.items.length ? [
+        el('h2', { textContent:t('social') }),
+        el('div', { className:'card' }, ...DB.social.items.map(s => {
+          const url = s.url.trim();
+          // всё без http(s) получает https://, чтобы нельзя было вставить javascript:
+          return url ? link(s.name, /^https?:\/\//i.test(url) ? url : 'https://' + url) : el('p', { textContent:`${s.name}: ${t('noLink')}` });
+        }))
+      ] : []),
       book()
     ];
   },

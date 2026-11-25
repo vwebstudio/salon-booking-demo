@@ -7,6 +7,9 @@ const DEFAULTS = {
     address_uk:'Вулиця, будинок', address_ru:'Улица, дом',
     phone:'+380 XX XXX XX XX', telegram:''
   },
+  // Отзывы здесь только заглушки: на сайт ставить лишь настоящие отзывы клиентов салона
+  reviews: { on:true, items:[ { id:'r1', author:"Ім'я клієнта", text:'Тут буде текст відгуку клієнта.' } ] },
+  social: { on:true, items:[ { id:'s1', name:'Instagram', url:'' }, { id:'s2', name:'Facebook', url:'' }, { id:'s3', name:'TikTok', url:'' } ] },
   services: [
     { id:'cut',   uk:'Чоловіча стрижка',  ru:'Мужская стрижка',   price:400, min:60 },
     { id:'beard', uk:'Оформлення бороди', ru:'Оформление бороды', price:250, min:30 },
