@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сторінка майстра (демо)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="demo" id="demo"></span>
+    <button id="lang" type="button"></button>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script src="shared.js"></script>
+<script>
+const T = {
+  uk: { demo:'Демо: без справжнього входу', other:'Русский', login:'Увійти через Telegram', admin:'Сторінка майстра', schedule:'Розклад', services:'Послуги та години', masters:'Майстри',
+    master:'Майстер', day:'День', none:'Записів немає', cancel:'Скасувати запис', sure:'Підтвердити скасування', warn:'Попередьте клієнта телефоном', cancelled:'Запис скасовано',
+    add:'Додати запис', service:'Послуга', time:'Час', name:"Ім'я", phone:"Телефон (необов'язково)", empty:'Вільного часу немає, оберіть інший день', taken:'Цей час уже зайнятий, оберіть інший', needName:"Вкажіть ім'я",
+    nameUk:'Назва українською', nameRu:'Назва російською', price:'Ціна, грн', min:'Тривалість, хв', open:'Відкриття, година', close:'Закриття, година', addService:'Додати послугу', addMaster:'Додати майстра',
+    tg:'Telegram-акаунт', remove:'Видалити', save:'Зберегти', saved:'Збережено', check:'Заповніть усі поля коректно', last:'Має залишитися хоча б один пункт', busy:'У майстра є майбутні записи. Спочатку скасуйте їх', error:'Не вдалося. Спробуйте ще раз' },
+  ru: { demo:'Демо: без настоящего входа', other:'Українська', login:'Войти через Telegram', admin:'Страница мастера', schedule:'Расписание', services:'Услуги и часы', masters:'Мастера',
+    master:'Мастер', day:'День', none:'Записей нет', cancel:'Отменить запись', sure:'Подтвердить отмену', warn:'Предупредите клиента по телефону', cancelled:'Запись отменена',
+    add:'Добавить запись', service:'Услуга', time:'Время', name:'Имя', phone:'Телефон (необязательно)', empty:'Свободного времени нет, выберите другой день', taken:'Это время уже занято, выберите другое', needName:'Укажите имя',
+    nameUk:'Название на украинском', nameRu:'Название на русском', price:'Цена, грн', min:'Длительность, мин', open:'Открытие, час', close:'Закрытие, час', addService:'Добавить услугу', addMaster:'Добавить мастера',
+    tg:'Telegram-аккаунт', remove:'Удалить', save:'Сохранить', saved:'Сохранено', check:'Заполните все поля корректно', last:'Должен остаться хотя бы один пункт', busy:'У мастера есть будущие записи. Сначала отмените их', error:'Не получилось. Попробуйте ещё раз' }
+};
+
+let lang = 'uk';
+try { if (localStorage.getItem('lang') === 'ru') lang = 'ru'; } catch (e) {}
+const t = k => T[lang][k];
+const app = document.getElementById('app');
+const load = () => JSON.parse(localStorage.getItem('bookings') || '[]');
+const save = list => localStorage.setItem('bookings', JSON.stringify(list));
+const pad = n => String(n).padStart(2, '0');
+const hhmm = m => pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+const dayKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const dayLabel = key => new Date(key + 'T00:00').toLocaleDateString(lang === 'uk' ? 'uk-UA' : 'ru-RU', { weekday:'short', day:'numeric', month:'short' });
+const days = Array.from({ length:SALON.daysAhead }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return dayKey(d); });
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const copy = () => JSON.parse(JSON.stringify({ open:DB.open, close:DB.close, services:DB.services, masters:DB.masters }));
+
+let entered = false, tab = 'schedule', message = '', confirmId = '', work = copy();
+let view = { master:MASTERS[0].id, date:days[0], service:SERVICES[0].id, start:'', name:'', phone:'' };
+
+function el(tag, props = {}, ...children) {
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...children.filter(Boolean));
+  return node;
+}
+const button = (text, onclick, cls = '') => el('button', { type:'button', textContent:text, onclick, className:cls });
+const input = (label, obj, key, type = 'text') => el('label', { textContent:label },
+  el('input', { type, value:obj[key] ?? '', maxLength:60, oninput:e => obj[key] = type === 'number' ? Number(e.target.value) : e.target.value }));
+const select = (label, value, options, onchange) => el('label', { textContent:label },
+  el('select', { onchange:e => { message = ''; onchange(e.target.value); render(); } },
+    ...options.map(([v, text]) => el('option', { value:v, textContent:text, selected:String(v) === String(value) }))));
+
+function freeSlots() {
+  const dur = DB.services.find(s => s.id === view.service).min, now = new Date(), result = [];
+  const busy = load().filter(b => b.master === view.master && b.date === view.date && b.status === 'booked');
+  for (let m = SALON.open * 60; m + dur <= SALON.close * 60; m += 30) {
+    if (view.date === dayKey(now) && m <= now.getHours() * 60 + now.getMinutes()) continue;
+    if (!busy.some(b => m < b.start + b.min && b.start < m + dur)) result.push(m);
+  }
+  return result;
+}
+
+function addBooking() {
+  if (!view.name.trim()) { message = 'needName'; return render(); }
+  const start = Number(view.start);
+  if (!freeSlots().includes(start)) { message = 'taken'; view.start = ''; return render(); }
+  save([...load(), { id:newId(), service:view.service, master:view.master, date:view.date, start,
+    min:DB.services.find(s => s.id === view.service).min, name:view.name.trim(), phone:view.phone.trim(), status:'booked' }]);
+  view = { ...view, start:'', name:'', phone:'' };
+  message = 'saved';
+  render();
+}
+
+function scheduleTab() {
+  const list = load().filter(b => b.master === view.master && b.date === view.date).sort((a, b) => a.start - b.start);
+  const free = freeSlots();
+  if (!free.includes(Number(view.start))) view.start = free[0] ?? '';
+  return [
+    select(t('master'), view.master, MASTERS.map(m => [m.id, m[lang]]), v => view.master = v),
+    select(t('day'), view.date, days.map(d => [d, dayLabel(d)]), v => view.date = v),
+    ...(list.length ? list.map(b => el('div', { className:'card' + (b.status === 'cancelled' ? ' off' : '') },
+      el('p', { textContent:`${hhmm(b.start)}–${hhmm(b.start + b.min)} · ${DB.services.find(s => s.id === b.service)?.[lang] || '—'}` }),
+      el('p', { textContent:[b.name, b.phone].filter(Boolean).join(' · ') }),
+      b.status === 'cancelled' && el('p', { textContent:t('cancelled') }),
+      b.status === 'booked' && confirmId === b.id && el('p', { className:'error', textContent:t('warn') }),
+      b.status === 'booked' && button(t(confirmId === b.id ? 'sure' : 'cancel'), () => {
+        if (confirmId !== b.id) confirmId = b.id;
+        else { save(load().map(x => x.id === b.id ? { ...x, status:'cancelled' } : x)); confirmId = ''; }
+        render();
+      }, 'ghost')
+    )) : [ el('p', { textContent:t('none') }) ]),
+    el('h2', { textContent:t('add') }),
+    select(t('service'), view.service, SERVICES.map(s => [s.id, s[lang]]), v => view.service = v),
+    free.length ? select(t('time'), view.start, free.map(m => [m, hhmm(m)]), v => view.start = v) : el('p', { textContent:t('empty') }),
+    input(t('name'), view, 'name'),
+    input(t('phone'), view, 'phone', 'tel'),
+    free.length && button(t('add'), addBooking, 'primary')
+  ];
+}
+
+function persist() {
+  const services = work.services.filter(s => !s.off), masters = work.masters.filter(m => !m.off);
+  const named = x => x.uk.trim() && x.ru.trim();
+  const ok = services.every(s => named(s) && s.price > 0 && Number.isInteger(s.min) && s.min > 0)
+    && masters.every(named)
+    && Number.isInteger(work.open) && Number.isInteger(work.close) && work.open >= 0 && work.close <= 24 && work.open < work.close;
+  if (!ok) { message = 'check'; return render(); }
+  localStorage.setItem('salon', JSON.stringify(work));
+  sessionStorage.setItem('adminTab', tab);
+  location.reload(); // перечитываем данные из хранилища
+}
+
+function remove(list, item) {
+  if (list.filter(x => !x.off).length === 1) message = 'last';
+  else if (list === work.masters && load().some(b => b.master === item.id && b.status === 'booked' && b.date >= days[0])) message = 'busy';
+  else { item.off = true; message = ''; }
+  render();
+}
+
+const editor = (list, fields) => list.filter(x => !x.off).map(item => el('div', { className:'card' },
+  ...fields.map(([key, label, type]) => input(t(label), item, key, type)),
+  button(t('remove'), () => remove(list, item), 'ghost')));
+
+const servicesTab = () => [
+  input(t('open'), work, 'open', 'number'),
+  input(t('close'), work, 'close', 'number'),
+  ...editor(work.services, [['uk','nameUk'], ['ru','nameRu'], ['price','price','number'], ['min','min','number']]),
+  button(t('addService'), () => { work.services.push({ id:newId(), uk:'', ru:'', price:0, min:30 }); render(); }, 'ghost'),
+  button(t('save'), persist, 'primary')
+];
+const mastersTab = () => [
+  ...editor(work.masters, [['uk','nameUk'], ['ru','nameRu'], ['tg','tg']]),
+  button(t('addMaster'), () => { work.masters.push({ id:newId(), uk:'', ru:'', tg:'' }); render(); }, 'ghost'),
+  button(t('save'), persist, 'primary')
+];
+
+function render() {
+  document.documentElement.lang = lang;
+  document.getElementById('demo').textContent = t('demo');
+  document.getElementById('lang').textContent = t('other');
+  try {
+    if (!entered) {
+      app.replaceChildren(el('h1', { textContent:t('admin') }), button(t('login'), () => { entered = true; sessionStorage.setItem('entered', '1'); render(); }, 'primary'));
+    } else {
+      const tabs = el('div', { className:'tabs' }, ...['schedule', 'services', 'masters'].map(name => {
+        const b = button(t(name), () => { tab = name; message = ''; confirmId = ''; render(); });
+        b.setAttribute('aria-pressed', tab === name);
+        return b;
+      }));
+      const body = { schedule:scheduleTab, services:servicesTab, masters:mastersTab }[tab]();
+      app.replaceChildren(tabs, ...body.filter(Boolean));
+    }
+    if (message) app.append(el('p', { className: message === 'saved' ? '' : 'error', textContent:t(message), role:'status' }));
+  } catch (e) {
+    app.replaceChildren(el('p', { className:'error', textContent:t('error') }));
+  }
+}
+
+document.getElementById('lang').onclick = () => {
+  lang = lang === 'uk' ? 'ru' : 'uk';
+  try { localStorage.setItem('lang', lang); } catch (e) {}
+  render();
+};
+window.addEventListener('storage', e => { if (e.key === 'bookings') render(); });
+entered = sessionStorage.getItem('entered') === '1';
+if (sessionStorage.getItem('adminTab')) { tab = sessionStorage.getItem('adminTab'); message = 'saved'; sessionStorage.removeItem('adminTab'); }
+render();
+</script>
+</body>
+</html>

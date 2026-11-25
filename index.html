@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Запис до салону (демо)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="demo" id="demo"></span>
+    <button id="lang" type="button"></button>
+  </header>
+  <main id="app"><p>Завантажуємо…</p></main>
+</div>
+
+<script src="shared.js"></script>
+<script>
+
+const T = {
+  uk: { demo:'Демо: приклад даних', other:'Русский', title:'Назва салону', address:'Адреса: вулиця, будинок', hours:'Щодня', services:'Послуги', min:'хв', cur:'грн',
+    book:'Записатися', next:'Далі', back:'Назад', confirm:'Підтвердити запис', done:'Ви записані', cancel:'Скасувати запис', cancelled:'Запис скасовано',
+    empty:'Вільного часу немає, оберіть інший день', taken:'Цей час уже зайнятий, оберіть інший', error:'Не вдалося. Спробуйте ще раз',
+    service:'Оберіть послугу', master:'Оберіть майстра', time:'Оберіть день і час', contact:'Ваші дані', name:"Ім'я", phone:'Телефон', fill:"Вкажіть ім'я та телефон (щонайменше 9 цифр)",
+    link:'Збережіть посилання, щоб скасувати запис:', home:'На головну', notFound:'Запис не знайдено' },
+  ru: { demo:'Демо: пример данных', other:'Українська', title:'Название салона', address:'Адрес: улица, дом', hours:'Ежедневно', services:'Услуги', min:'мин', cur:'грн',
+    book:'Записаться', next:'Далее', back:'Назад', confirm:'Подтвердить запись', done:'Вы записаны', cancel:'Отменить запись', cancelled:'Запись отменена',
+    empty:'Свободного времени нет, выберите другой день', taken:'Это время уже занято, выберите другое', error:'Не получилось. Попробуйте ещё раз',
+    service:'Выберите услугу', master:'Выберите мастера', time:'Выберите день и время', contact:'Ваши данные', name:'Имя', phone:'Телефон', fill:'Укажите имя и телефон (не меньше 9 цифр)',
+    link:'Сохраните ссылку, чтобы отменить запись:', home:'На главную', notFound:'Запись не найдена' }
+};
+
+let lang = 'uk';
+try { if (localStorage.getItem('lang') === 'ru') lang = 'ru'; } catch (e) {}
+let screen = 'home', error = '', draft = {}, lastId = '';
+
+const t = k => T[lang][k];
+const app = document.getElementById('app');
+// Демо: записи зберігаються лише в цьому браузері
+const load = () => JSON.parse(localStorage.getItem('bookings') || '[]');
+const save = list => localStorage.setItem('bookings', JSON.stringify(list));
+const service = id => DB.services.find(s => s.id === id);
+const master = id => DB.masters.find(m => m.id === id);
+const pad = n => String(n).padStart(2, '0');
+const hhmm = m => pad(Math.floor(m / 60)) + ':' + pad(m % 60);
+const dayKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const dayLabel = key => new Date(key + 'T00:00').toLocaleDateString(lang === 'uk' ? 'uk-UA' : 'ru-RU', { weekday:'short', day:'numeric', month:'short' });
+
+function slots(date) {
+  const dur = service(draft.service).min, now = new Date(), result = [];
+  const busy = load().filter(b => b.master === draft.master && b.date === date && b.status === 'booked');
+  for (let m = SALON.open * 60; m + dur <= SALON.close * 60; m += 30) {
+    if (date === dayKey(now) && m <= now.getHours() * 60 + now.getMinutes()) continue;
+    if (busy.some(b => m < b.start + b.min && b.start < m + dur)) continue;
+    result.push(m);
+  }
+  return result;
+}
+
+function el(tag, props = {}, ...children) {
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...children.filter(Boolean));
+  return node;
+}
+const button = (text, onclick, cls = '') => el('button', { type:'button', textContent:text, onclick, className:cls });
+const go = name => { screen = name; error = ''; render(); window.scrollTo(0, 0); };
+const option = (left, right, selected, onclick) => {
+  const b = el('button', { type:'button', className:'option', onclick }, el('span', { textContent:left }), el('span', { textContent:right }));
+  b.setAttribute('aria-pressed', selected);
+  return b;
+};
+const price = s => `${s.price} ${t('cur')} · ${s.min} ${t('min')}`;
+const summary = b => el('div', { className:'card' },
+  el('p', { textContent:`${service(b.service)[lang]} · ${price(service(b.service))}` }),
+  el('p', { textContent:master(b.master)[lang] }),
+  el('p', { textContent:`${dayLabel(b.date)}, ${hhmm(b.start)}` }));
+
+const screens = {
+  home: () => [
+    el('h1', { textContent:t('title') }),
+    el('p', { textContent:t('address') }),
+    el('p', { textContent:`${t('hours')} ${SALON.open}:00–${SALON.close}:00` }),
+    el('h2', { textContent:t('services') }),
+    ...SERVICES.map(s => el('div', { className:'card row' }, el('span', { textContent:s[lang] }), el('span', { textContent:price(s) }))),
+    button(t('book'), () => { draft = {}; go('service'); }, 'primary')
+  ],
+  service: () => [
+    el('h2', { textContent:t('service') }),
+    ...SERVICES.map(s => option(s[lang], price(s), draft.service === s.id, () => { draft.service = s.id; delete draft.start; render(); })),
+    draft.service && button(t('next'), () => {
+      if (MASTERS.length === 1) { draft.master = MASTERS[0].id; go('time'); } else go('master');
+    }, 'primary'),
+    button(t('back'), () => go('home'), 'ghost')
+  ],
+  master: () => [
+    el('h2', { textContent:t('master') }),
+    ...MASTERS.map(m => option(m[lang], '', draft.master === m.id, () => { draft.master = m.id; delete draft.start; render(); })),
+    draft.master && button(t('next'), () => go('time'), 'primary'),
+    button(t('back'), () => go('service'), 'ghost')
+  ],
+  time: () => {
+    const days = Array.from({ length:SALON.daysAhead }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return dayKey(d); });
+    draft.date = draft.date || days[0];
+    const select = el('select', { onchange: e => { draft.date = e.target.value; delete draft.start; error = ''; render(); } },
+      ...days.map(d => el('option', { value:d, textContent:dayLabel(d), selected:d === draft.date })));
+    select.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:var(--card);color:var(--text);font:inherit;margin-bottom:12px';
+    const free = slots(draft.date);
+    return [
+      el('h2', { textContent:t('time') }), select,
+      free.length
+        ? el('div', { className:'grid' }, ...free.map(m => {
+            const b = button(hhmm(m), () => { draft.start = m; error = ''; render(); });
+            b.setAttribute('aria-pressed', draft.start === m);
+            return b;
+          }))
+        : el('p', { textContent:t('empty') }),
+      free.includes(draft.start) && button(t('next'), () => go('contact'), 'primary'),
+      button(t('back'), () => go(MASTERS.length === 1 ? 'service' : 'master'), 'ghost')
+    ];
+  },
+  contact: () => {
+    const field = (key, type) => el('label', { textContent:t(key) },
+      el('input', { type, value:draft[key] || '', autocomplete:type === 'tel' ? 'tel' : 'name', maxLength:60, oninput:e => draft[key] = e.target.value }));
+    return [
+      el('h2', { textContent:t('contact') }),
+      summary(draft), field('name', 'text'), field('phone', 'tel'),
+      button(t('confirm'), confirmBooking, 'primary'),
+      button(t('back'), () => go('time'), 'ghost')
+    ];
+  },
+  done: () => {
+    const b = load().find(x => x.id === lastId);
+    const url = location.href.split('#')[0] + '#cancel=' + b.id;
+    return [
+      el('h1', { textContent:t('done') }), summary(b),
+      el('p', { textContent:t('link') }), el('a', { href:url, textContent:url }),
+      button(t('home'), () => go('home'), 'ghost')
+    ];
+  },
+  cancel: () => {
+    const b = load().find(x => x.id === lastId);
+    const home = button(t('home'), () => { history.replaceState(null, '', location.pathname); go('home'); }, 'ghost');
+    if (!b) return [ el('h2', { textContent:t('notFound') }), home ];
+    if (b.status === 'cancelled') return [ el('h2', { textContent:t('cancelled') }), summary(b), home ];
+    return [
+      el('h2', { textContent:t('cancel') }), summary(b),
+      button(t('cancel'), () => {
+        try { save(load().map(x => x.id === b.id ? { ...x, status:'cancelled' } : x)); error = ''; }
+        catch (e) { error = 'error'; }
+        render();
+      }, 'primary'),
+      home
+    ];
+  }
+};
+
+function confirmBooking() {
+  const name = (draft.name || '').trim(), phone = (draft.phone || '').trim();
+  if (!name || phone.replace(/\D/g, '').length < 9) { error = 'fill'; return render(); }
+  try {
+    if (!slots(draft.date).includes(draft.start)) { delete draft.start; screen = 'time'; error = 'taken'; return render(); }
+    lastId = Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    save([...load(), { id:lastId, service:draft.service, master:draft.master, date:draft.date, start:draft.start,
+      min:service(draft.service).min, name, phone, status:'booked' }]);
+    draft = {};
+    go('done');
+  } catch (e) { error = 'error'; render(); }
+}
+
+function render() {
+  document.documentElement.lang = lang;
+  document.getElementById('demo').textContent = t('demo');
+  document.getElementById('lang').textContent = t('other');
+  try {
+    app.replaceChildren(...screens[screen]().filter(Boolean));
+  } catch (e) {
+    app.replaceChildren(el('p', { textContent:t('error') }));
+  }
+  if (error) app.append(el('p', { className:'error', textContent:t(error), role:'alert' }));
+}
+
+function route() {
+  const match = location.hash.match(/^#cancel=(\w+)$/);
+  if (match) { lastId = match[1]; screen = 'cancel'; }
+  error = '';
+  render();
+}
+
+document.getElementById('lang').onclick = () => {
+  lang = lang === 'uk' ? 'ru' : 'uk';
+  try { localStorage.setItem('lang', lang); } catch (e) {}
+  render();
+};
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>
