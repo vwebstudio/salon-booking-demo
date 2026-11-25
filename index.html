@@ -19,7 +19,7 @@
 <main id="app"><p>Завантажуємо…</p></main>
 <footer id="foot"></footer>
 
-<script src="shared.js?v=5"></script>
+<script src="shared.js?v=7"></script>
 <script>
 
 const T = {
@@ -95,13 +95,13 @@ const screens = {
     }) : [];
     return [
       el('div', { className:'hero' },
-        photo(PHOTOS.hero, 1920, '', 'eager'),
+        photo(DB.photos.hero, PHOTOS.hero, 1920, '', 'eager'),
         el('div', {},
           h('h1', info['name_' + lang]),
           h('p', info['about_' + lang]),
           el('p', { className:'meta', textContent:`${address} · ${t('hours')} ${SALON.open}:00–${SALON.close}:00` }))),
       el('section', { id:'services', className:'split' },
-        photo(PHOTOS.tools, 900, 'shot'),
+        photo(DB.photos.tools, PHOTOS.tools, 900, 'shot'),
         el('div', {}, h('h2', t('services')),
           el('ul', { className:'menu' }, ...SERVICES.map(s => el('li', {},
             el('button', { type:'button', onclick:() => { draft = { service:s.id }; go('service'); } },
@@ -113,7 +113,7 @@ const screens = {
           book())),
       el('section', { id:'team' }, h('h2', t('team')),
         el('div', { className:'masters' }, ...MASTERS.map((m, i) => el('figure', {},
-          photo(PHOTOS.masters[i % PHOTOS.masters.length], 700),
+          photo(m.photo, PHOTOS.masters[i % PHOTOS.masters.length], 700),
           el('figcaption', {}, h('h3', m[lang]), h('p', m['about_' + lang] || '')))))),
       DB.reviews.on && DB.reviews.items.length &&
         el('section', { id:'reviews', className:'quotes' }, h('h2', t('reviews')),
@@ -130,7 +130,7 @@ const screens = {
             tg && link(t('writeTg'), 'https://t.me/' + tg)),
           social.length && h('h3', t('social')),
           social.length && el('div', { className:'links' }, ...social)),
-        photo(PHOTOS.chair, 900, 'shot'))
+        photo(DB.photos.chair, PHOTOS.chair, 900, 'shot'))
     ].filter(Boolean);
   },
   service: () => [
@@ -216,13 +216,8 @@ function confirmBooking() {
   } catch (e) { error = 'error'; render(); }
 }
 
-// Временные стоковые фото (Unsplash) — заменить на фото салона
-const PHOTOS = {
-  hero:'photo-1585747860715-2ba37e788b70', tools:'photo-1621605815971-fbc98d665033', chair:'photo-1503951914875-452162b0f3f1',
-  masters:['photo-1647140655214-e4a2d914971f', 'photo-1599351431202-1e0f0137899a']
-};
-const photo = (id, width, className = '', loading = 'lazy') =>
-  el('img', { loading, className, alt:'', src:`https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=75` });
+const photo = (own, stock, width, className = '', loading = 'lazy') =>
+  el('img', { loading, className, alt:'', src:own || stockUrl(stock, width) });
 const startBooking = () => { draft = {}; go('service'); };
 function scrollToSection(id) {
   if (screen !== 'home') { history.replaceState(null, '', location.pathname); go('home'); }
@@ -236,7 +231,8 @@ function renderChrome() {
   document.getElementById('foot').replaceChildren(
     el('strong', { textContent:DB.info['name_' + lang] }),
     el('p', { textContent:`${DB.info['address_' + lang]} · ${DB.info.phone}` }),
-    el('p', { textContent:t('photos') }));
+    // подпись про Unsplash нужна, только пока хоть одно фото стоковое
+    ...(Object.values(DB.photos).every(Boolean) && MASTERS.every(m => m.photo) ? [] : [el('p', { textContent:t('photos') })]));
   app.className = screen === 'home' ? '' : 'narrow';
 }
 

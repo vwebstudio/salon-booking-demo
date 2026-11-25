@@ -4,29 +4,31 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Сторінка майстра (демо)</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3">
+<link href="https://fonts.googleapis.com/css2?family=Alumni+Sans:wght@800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="admin.css?v=7">
 </head>
-<body>
+<body class="admin">
 <div class="wrap">
   <header>
-    <span class="demo" id="demo"></span>
+    <div class="brand"><span id="brand"></span><span class="demo" id="demo"></span></div>
+    <a id="site" href="index.html" target="_blank" rel="noopener"></a>
     <button id="lang" type="button"></button>
   </header>
   <main id="app"></main>
 </div>
 
-<script src="shared.js?v=3"></script>
+<script src="shared.js?v=7"></script>
 <script>
 const T = {
-  uk: { demo:'Демо: без справжнього входу', other:'Русский', login:'Увійти через Telegram', admin:'Сторінка майстра', schedule:'Розклад', services:'Послуги та години', masters:'Майстри',
+  uk: { demo:'Демо: зміни бачить лише цей браузер', site:'Відкрити сайт', photos:'Фото', heroPhoto:'Головне фото', toolsPhoto:'Фото біля послуг', chairPhoto:'Фото біля контактів', choose:'Обрати фото', reset:'Повернути стандартне', pressSave:'Натисніть «Зберегти», щоб фото лишилося', badPhoto:'Не вдалося прочитати фото. Спробуйте JPG або PNG', tooBig:'Не вистачає місця в браузері. Поверніть частину фото на стандартні', other:'Русский', login:'Увійти через Telegram', admin:'Сторінка майстра', schedule:'Розклад', services:'Послуги та години', masters:'Майстри',
     salon:'Про салон', blocks:'Соцмережі та відгуки', socialTitle:'Соцмережі', reviewsTitle:'Відгуки', hideBlock:'Прибрати блок із сайту', showBlock:'Повернути блок на сайт', hiddenNote:'Зараз блок не показується на сайті', addSocial:'Додати соцмережу', addReview:'Додати відгук', socName:'Назва мережі', socUrl:'Посилання', author:"Ім'я клієнта", reviewText:'Текст відгуку', salonName:'Назва салону', about:'Опис', address:'Адреса', phoneSalon:'Телефон салону', tgSalon:'Telegram салону', master:'Майстер', day:'День', none:'Записів немає', cancel:'Скасувати запис', sure:'Підтвердити скасування', warn:'Попередьте клієнта телефоном', cancelled:'Запис скасовано',
-    add:'Додати запис', service:'Послуга', time:'Час', name:"Ім'я", phone:"Телефон (необов'язково)", empty:'Вільного часу немає, оберіть інший день', taken:'Цей час уже зайнятий, оберіть інший', needName:"Вкажіть ім'я",
+    add:'Додати запис', addHint:'Для клієнтів, які записалися не через сайт: телефоном, у Telegram або особисто. Так цей час не займуть удруге.', service:'Послуга', time:'Час', name:"Ім'я", phone:"Телефон (необов'язково)", empty:'Вільного часу немає, оберіть інший день', taken:'Цей час уже зайнятий, оберіть інший', needName:"Вкажіть ім'я",
     aboutUk:'Опис українською', aboutRu:'Опис російською', nameUk:'Назва українською', nameRu:'Назва російською', price:'Ціна, грн', min:'Тривалість, хв', open:'Відкриття, година', close:'Закриття, година', addService:'Додати послугу', addMaster:'Додати майстра',
     tg:'Telegram-акаунт', remove:'Видалити', save:'Зберегти', saved:'Збережено', check:'Заповніть усі поля коректно', last:'Має залишитися хоча б один пункт', busy:'У майстра є майбутні записи. Спочатку скасуйте їх', error:'Не вдалося. Спробуйте ще раз' },
-  ru: { demo:'Демо: без настоящего входа', other:'Українська', login:'Войти через Telegram', admin:'Страница мастера', schedule:'Расписание', services:'Услуги и часы', masters:'Мастера',
+  ru: { demo:'Демо: изменения видит только этот браузер', site:'Открыть сайт', photos:'Фото', heroPhoto:'Главное фото', toolsPhoto:'Фото у услуг', chairPhoto:'Фото у контактов', choose:'Выбрать фото', reset:'Вернуть стандартное', pressSave:'Нажмите «Сохранить», чтобы фото осталось', badPhoto:'Не получилось прочитать фото. Попробуйте JPG или PNG', tooBig:'Не хватает места в браузере. Верните часть фото на стандартные', other:'Українська', login:'Войти через Telegram', admin:'Страница мастера', schedule:'Расписание', services:'Услуги и часы', masters:'Мастера',
     salon:'О салоне', blocks:'Соцсети и отзывы', socialTitle:'Соцсети', reviewsTitle:'Отзывы', hideBlock:'Убрать блок с сайта', showBlock:'Вернуть блок на сайт', hiddenNote:'Сейчас блок не показывается на сайте', addSocial:'Добавить соцсеть', addReview:'Добавить отзыв', socName:'Название сети', socUrl:'Ссылка', author:'Имя клиента', reviewText:'Текст отзыва', salonName:'Название салона', about:'Описание', address:'Адрес', phoneSalon:'Телефон салона', tgSalon:'Telegram салона', master:'Мастер', day:'День', none:'Записей нет', cancel:'Отменить запись', sure:'Подтвердить отмену', warn:'Предупредите клиента по телефону', cancelled:'Запись отменена',
-    add:'Добавить запись', service:'Услуга', time:'Время', name:'Имя', phone:'Телефон (необязательно)', empty:'Свободного времени нет, выберите другой день', taken:'Это время уже занято, выберите другое', needName:'Укажите имя',
+    add:'Добавить запись', addHint:'Для клиентов, записавшихся не через сайт: по телефону, в Telegram или лично. Так это время не займут второй раз.', service:'Услуга', time:'Время', name:'Имя', phone:'Телефон (необязательно)', empty:'Свободного времени нет, выберите другой день', taken:'Это время уже занято, выберите другое', needName:'Укажите имя',
     aboutUk:'Описание на украинском', aboutRu:'Описание на русском', nameUk:'Название на украинском', nameRu:'Название на русском', price:'Цена, грн', min:'Длительность, мин', open:'Открытие, час', close:'Закрытие, час', addService:'Добавить услугу', addMaster:'Добавить мастера',
     tg:'Telegram-аккаунт', remove:'Удалить', save:'Сохранить', saved:'Сохранено', check:'Заполните все поля корректно', last:'Должен остаться хотя бы один пункт', busy:'У мастера есть будущие записи. Сначала отмените их', error:'Не получилось. Попробуйте ещё раз' }
 };
@@ -43,7 +45,7 @@ const dayKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.
 const dayLabel = key => new Date(key + 'T00:00').toLocaleDateString(lang === 'uk' ? 'uk-UA' : 'ru-RU', { weekday:'short', day:'numeric', month:'short' });
 const days = Array.from({ length:SALON.daysAhead }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return dayKey(d); });
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-const copy = () => JSON.parse(JSON.stringify({ open:DB.open, close:DB.close, info:DB.info, reviews:DB.reviews, social:DB.social, services:DB.services, masters:DB.masters }));
+const copy = () => JSON.parse(JSON.stringify({ open:DB.open, close:DB.close, info:DB.info, photos:DB.photos, reviews:DB.reviews, social:DB.social, services:DB.services, masters:DB.masters }));
 
 let entered = false, tab = 'schedule', message = '', confirmId = '', work = copy();
 let view = { master:MASTERS[0].id, date:days[0], service:SERVICES[0].id, start:'', name:'', phone:'' };
@@ -100,6 +102,7 @@ function scheduleTab() {
       }, 'ghost')
     )) : [ el('p', { textContent:t('none') }) ]),
     el('h2', { textContent:t('add') }),
+    el('p', { className:'off', textContent:t('addHint') }),
     select(t('service'), view.service, SERVICES.map(s => [s.id, s[lang]]), v => view.service = v),
     free.length ? select(t('time'), view.start, free.map(m => [m, hhmm(m)]), v => view.start = v) : el('p', { textContent:t('empty') }),
     input(t('name'), view, 'name'),
@@ -118,7 +121,8 @@ function persist() {
     && work.social.items.every(s => s.name.trim())
     && Number.isInteger(work.open) && Number.isInteger(work.close) && work.open >= 0 && work.close <= 24 && work.open < work.close;
   if (!ok) { message = 'check'; return render(); }
-  localStorage.setItem('salon', JSON.stringify(work));
+  try { localStorage.setItem('salon', JSON.stringify(work)); }
+  catch (e) { message = 'tooBig'; return render(); }
   sessionStorage.setItem('adminTab', tab);
   location.reload(); // перечитываем данные из хранилища
 }
@@ -130,7 +134,45 @@ function remove(list, item) {
   render();
 }
 
-const editor = (list, fields) => list.filter(x => !x.off).map(item => el('div', { className:'card' },
+// Фото уменьшается перед сохранением, иначе не поместится в память браузера
+const shrink = (file, max) => new Promise((resolve, reject) => {
+  const url = URL.createObjectURL(file), img = new Image();
+  img.onload = () => {
+    const k = Math.min(1, max / Math.max(img.width, img.height)), canvas = document.createElement('canvas');
+    canvas.width = Math.round(img.width * k); canvas.height = Math.round(img.height * k);
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    resolve(canvas.toDataURL('image/jpeg', 0.78));
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image')); };
+  img.src = url;
+});
+
+function photoSlot(label, obj, key, stock, size, cls = '') {
+  const pick = el('input', { type:'file', accept:'image/*', onchange:async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try { obj[key] = await shrink(file, size); message = 'pressSave'; }
+    catch (err) { message = 'badPhoto'; }
+    render();
+  } });
+  return el('div', { className:'slot' },
+    label && el('strong', { textContent:label }),
+    el('img', { className:'thumb ' + cls, alt:'', src:obj[key] || stockUrl(stock, 600) }),
+    el('label', { className:'filebtn', textContent:t('choose') }, pick),
+    obj[key] && button(t('reset'), () => { obj[key] = ''; message = 'pressSave'; render(); }, 'ghost'));
+}
+
+const photosTab = () => [
+  el('h2', { textContent:t('photos') }),
+  photoSlot(t('heroPhoto'), work.photos, 'hero', PHOTOS.hero, 1600),
+  photoSlot(t('toolsPhoto'), work.photos, 'tools', PHOTOS.tools, 1000),
+  photoSlot(t('chairPhoto'), work.photos, 'chair', PHOTOS.chair, 1000),
+  button(t('save'), persist, 'primary')
+];
+
+const editor = (list, fields, extra) => list.filter(x => !x.off).map((item, i) => el('div', { className:'card' },
+  extra && extra(item, i),
   ...fields.map(([key, label, type]) => input(t(label), item, key, type)),
   button(t('remove'), () => remove(list, item), 'ghost')));
 
@@ -142,8 +184,9 @@ const servicesTab = () => [
   button(t('save'), persist, 'primary')
 ];
 const mastersTab = () => [
-  ...editor(work.masters, [['uk','nameUk'], ['ru','nameRu'], ['about_uk','aboutUk'], ['about_ru','aboutRu'], ['tg','tg']]),
-  button(t('addMaster'), () => { work.masters.push({ id:newId(), uk:'', ru:'', tg:'' }); render(); }, 'ghost'),
+  ...editor(work.masters, [['uk','nameUk'], ['ru','nameRu'], ['about_uk','aboutUk'], ['about_ru','aboutRu'], ['tg','tg']],
+    (m, i) => photoSlot('', m, 'photo', PHOTOS.masters[i % PHOTOS.masters.length], 800, 'portrait')),
+  button(t('addMaster'), () => { work.masters.push({ id:newId(), uk:'', ru:'', about_uk:'', about_ru:'', tg:'', photo:'' }); render(); }, 'ghost'),
   button(t('save'), persist, 'primary')
 ];
 
@@ -176,19 +219,22 @@ function render() {
   document.documentElement.lang = lang;
   document.getElementById('demo').textContent = t('demo');
   document.getElementById('lang').textContent = t('other');
+  document.getElementById('brand').textContent = DB.info['name_' + lang];
+  document.getElementById('site').textContent = t('site');
+  app.className = entered ? 'in' : '';
   try {
     if (!entered) {
       app.replaceChildren(el('h1', { textContent:t('admin') }), button(t('login'), () => { entered = true; sessionStorage.setItem('entered', '1'); render(); }, 'primary'));
     } else {
-      const tabs = el('div', { className:'tabs' }, ...['schedule', 'services', 'masters', 'salon', 'blocks'].map(name => {
+      const tabs = el('div', { className:'tabs' }, ...['schedule', 'services', 'masters', 'salon', 'photos', 'blocks'].map(name => {
         const b = button(t(name), () => { tab = name; message = ''; confirmId = ''; render(); });
         b.setAttribute('aria-pressed', tab === name);
         return b;
       }));
-      const body = { schedule:scheduleTab, services:servicesTab, masters:mastersTab, salon:salonTab, blocks:blocksTab }[tab]();
-      app.replaceChildren(tabs, ...body.filter(Boolean));
+      const body = { schedule:scheduleTab, services:servicesTab, masters:mastersTab, salon:salonTab, blocks:blocksTab, photos:photosTab }[tab]();
+      app.replaceChildren(tabs, el('div', { className:'panel' }, ...body));
     }
-    if (message) app.append(el('p', { className: message === 'saved' ? '' : 'error', textContent:t(message), role:'status' }));
+    if (message) (app.querySelector('.panel') || app).append(el('p', { className: ['saved', 'pressSave'].includes(message) ? '' : 'error', textContent:t(message), role:'status' }));
   } catch (e) {
     app.replaceChildren(el('p', { className:'error', textContent:t('error') }));
   }

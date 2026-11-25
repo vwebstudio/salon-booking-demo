@@ -8,6 +8,7 @@ const DEFAULTS = {
     phone:'+380 XX XXX XX XX', telegram:''
   },
   // Отзывы здесь только заглушки: на сайт ставить лишь настоящие отзывы клиентов салона
+  photos: { hero:'', tools:'', chair:'' }, // пусто = временное стоковое фото
   reviews: { on:true, items:[ { id:'r1', author:"Ім'я клієнта", text:'Тут буде текст відгуку клієнта.' } ] },
   social: { on:true, items:[ { id:'s1', name:'Instagram', url:'' }, { id:'s2', name:'Facebook', url:'' }, { id:'s3', name:'TikTok', url:'' } ] },
   services: [
@@ -28,3 +29,10 @@ const DB = { ...DEFAULTS, ...stored, info: { ...DEFAULTS.info, ...(stored && sto
 const SALON = { open: DB.open, close: DB.close, daysAhead: 14 };
 const SERVICES = DB.services.filter(s => !s.off);
 const MASTERS = DB.masters.filter(m => !m.off);
+
+// Временные стоковые фото (Unsplash), пока не загружены свои
+const PHOTOS = {
+  hero:'photo-1585747860715-2ba37e788b70', tools:'photo-1621605815971-fbc98d665033', chair:'photo-1503951914875-452162b0f3f1',
+  masters:['photo-1647140655214-e4a2d914971f', 'photo-1599351431202-1e0f0137899a']
+};
+const stockUrl = (id, width) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=75`;
