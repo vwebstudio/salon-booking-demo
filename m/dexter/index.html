@@ -10,7 +10,6 @@
 <link rel="stylesheet" href="site.css?v=6">
 </head>
 <body class="site">
-<p style="margin:0;padding:10px 16px;background:#C9A227;color:#141312;font-weight:600;text-align:center">Макет від vwebstudio для власника салону. Це не офіційний сайт, онлайн-запис не працює.</p>
 <header class="top">
   <div class="in">
     <div class="brand"><span id="brand"></span><span class="demo" id="demo"></span></div>
@@ -239,6 +238,7 @@ function renderChrome() {
   document.getElementById('foot').replaceChildren(
     el('strong', { textContent:DB.info['name_' + lang] }),
     el('p', { textContent:`${DB.info['address_' + lang]} · ${DB.info.phone}` }),
+    el('p', { textContent:lang === 'uk' ? 'Макет від vwebstudio для власника салону. Онлайн-запис не працює.' : 'Макет от vwebstudio для владельца салона. Онлайн-запись не работает.' }),
     // подпись про Unsplash нужна, только пока хоть одно фото стоковое
     ...(Object.values(DB.photos).every(Boolean) && MASTERS.every(m => m.photo) ? [] : [el('p', { textContent:t('photos') })]));
   app.className = screen === 'home' ? '' : 'narrow';
