@@ -2,275 +2,142 @@
 <html lang="uk">
 <head>
 <meta charset="utf-8">
-<meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Airborne Barbershop (демо)</title>
+<meta name="robots" content="noindex">
+<title>Airborne (демо)</title>
 <link href="https://fonts.googleapis.com/css2?family=Alumni+Sans:wght@600;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=5">
-<link rel="stylesheet" href="site.css?v=6">
+<style>
+:root { --bg:#12150F; --panel:#1C2117; --line:#333B29; --muted:#AFB8A0; --accent:#B7CF5A; --text:#F3F0EA; --display:'Alumni Sans','Oswald',sans-serif; --pad:clamp(20px,5vw,72px); }
+* { box-sizing:border-box; margin:0; }
+html { scroll-behavior:smooth; scrollbar-color:var(--line) var(--bg); }
+body { background:var(--bg); color:var(--text); font:16px/1.55 Inter,system-ui,sans-serif; padding-bottom:76px; }
+::selection { background:var(--accent); color:var(--bg); }
+:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+a { color:inherit; }
+h1, h2, h3 { font-family:var(--display); text-transform:uppercase; line-height:.94; text-wrap:balance; }
+h2 { font-size:clamp(46px,7vw,84px); font-weight:800; margin-bottom:28px; }
+h3 { font-size:26px; font-weight:600; letter-spacing:.06em; color:var(--accent); margin:34px 0 4px; }
+section { padding:64px var(--pad) 0; scroll-margin-top:72px; }
+header { position:sticky; top:0; z-index:3; display:flex; align-items:center; gap:20px; padding:10px var(--pad); background:var(--bg); border-bottom:1px solid var(--line); }
+.brand { margin-right:auto; font:800 28px/1 var(--display); text-transform:uppercase; }
+.brand small { display:block; font:400 11px/1.5 Inter,system-ui,sans-serif; text-transform:none; color:var(--muted); }
+nav { display:none; gap:24px; font-size:14px; }
+nav a { text-decoration:none; }
+nav a:hover { color:var(--accent); }
+button { font:inherit; font-size:14px; background:none; color:inherit; border:1px solid var(--line); border-radius:4px; padding:6px 10px; cursor:pointer; }
+.hero { position:relative; isolation:isolate; display:flex; flex-direction:column; justify-content:flex-end; min-height:76svh; padding:48px var(--pad) 36px; overflow:hidden; }
+.hero img { position:absolute; inset:0; z-index:-2; width:100%; height:100%; object-fit:cover; animation:settle 1.8s cubic-bezier(.16,1,.3,1) both; }
+.hero::after { content:''; position:absolute; inset:0; z-index:-1; background:linear-gradient(0deg,var(--bg) 4%,rgba(0,0,0,.35) 60%,rgba(0,0,0,.45)); }
+h1 { font-size:clamp(72px,17vw,200px); font-weight:800; overflow-wrap:anywhere; }
+.lead { font-size:18px; margin-top:14px; max-width:34em; }
+.chips { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; font-size:14px; }
+.chip { display:inline-flex; align-items:center; gap:8px; padding:7px 14px; border:1px solid rgba(255,255,255,.28); border-radius:99px; background:rgba(0,0,0,.45); text-decoration:none; }
+.dot { width:8px; height:8px; border-radius:50%; background:#5BD16F; }
+.dot.closed { background:#E0675A; }
+.star { color:var(--accent); }
+@keyframes settle { from { transform:scale(1.09); } to { transform:scale(1); } }
+.prices { max-width:760px; }
+.row { display:grid; grid-template-columns:1fr auto; column-gap:20px; padding:16px 0; border-bottom:1px solid var(--line); }
+.row .name { font-size:17px; font-weight:600; }
+.row .time { grid-column:1; font-size:13px; color:var(--muted); }
+.row .price { grid-column:2; grid-row:1 / span 2; align-self:center; font:800 30px/1 var(--display); white-space:nowrap; font-variant-numeric:tabular-nums; }
+.cta { display:block; max-width:420px; margin-top:32px; padding:18px 28px; text-align:center; background:var(--accent); color:var(--bg); font:800 28px/1 var(--display); text-transform:uppercase; letter-spacing:.04em; text-decoration:none; border-radius:4px; }
+.cta:hover { filter:brightness(1.1); }
+.strip { display:grid; grid-auto-flow:column; grid-auto-columns:78%; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; padding:64px var(--pad) 0; }
+.strip img { width:100%; aspect-ratio:4/5; object-fit:cover; scroll-snap-align:center; border-radius:4px; background:var(--panel); }
+.visit { display:grid; gap:32px; }
+dl div { padding:16px 0; border-bottom:1px solid var(--line); }
+dt { font-size:13px; color:var(--muted); }
+dd { font:600 32px/1.15 var(--display); margin-top:4px; }
+iframe { width:100%; min-height:320px; border:0; border-radius:4px; background:var(--panel); filter:grayscale(1) contrast(1.1); }
+footer { margin-top:72px; padding:36px var(--pad); border-top:1px solid var(--line); color:var(--muted); font-size:13px; }
+footer strong { display:block; color:var(--text); font:800 clamp(44px,10vw,110px)/1 var(--display); text-transform:uppercase; margin-bottom:14px; overflow-wrap:anywhere; }
+.bar { position:fixed; z-index:4; left:0; right:0; bottom:0; display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:10px 14px calc(10px + env(safe-area-inset-bottom)); background:var(--bg); border-top:1px solid var(--line); }
+.bar a { padding:13px; text-align:center; font-weight:600; text-decoration:none; border:1px solid var(--line); border-radius:4px; }
+.bar a:first-child { border-color:var(--accent); color:var(--accent); }
+@media (min-width:860px) {
+  body { padding-bottom:0; }
+  nav { display:flex; }
+  .bar { display:none; }
+  section { padding-top:120px; }
+  .hero { min-height:calc(100svh - 70px); padding-bottom:64px; }
+  .split { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:72px; align-items:start; }
+  .split > h2 { position:sticky; top:100px; }
+  .strip { grid-auto-flow:row; grid-template-columns:repeat(3,minmax(0,1fr)); overflow:visible; padding-top:120px; }
+  .visit { grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:72px; }
+  iframe { height:100%; min-height:460px; }
+}
+@media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .hero img { animation:none; } }
+</style>
 </head>
-<body class="site">
-<header class="top">
-  <div class="in">
-    <div class="brand"><span id="brand"></span><span class="demo" id="demo"></span></div>
-    <nav id="nav"></nav>
-    <button id="lang" type="button"></button>
-  </div>
-</header>
-<main id="app"><p>Завантажуємо…</p></main>
-<footer id="foot"></footer>
-
-<script src="shared.js?v=7"></script>
+<body>
+<div id="app">Завантажуємо…</div>
 <script>
-
+const S = {"name": "Airborne", "address": "вул. Рональда Рейгана, 40, Київ", "phone": "050 525 0025", "open": 10, "close": 21, "rating": "4,6", "count": 50, "booking": "", "instagram": "airbornebarbershop", "lead": {"uk": "Барбершоп на Троєщині.", "ru": "Барбершоп на Троещине."}, "photos": ["photo-1605497788044-5a32c7078486", "photo-1493256338651-d82f7acb2b38", "photo-1503951914875-452162b0f3f1", "photo-1647140655214-e4a2d914971f"], "groups": [{"name": null, "items": [["Чоловіча стрижка", "Мужская стрижка", null, null], ["Стрижка бороди", "Стрижка бороды", null, null]]}]};
 const T = {
-  uk: { demo:'Демо: це не офіційний сайт салону', other:'Русский', hours:'Щодня', team:'Наші майстри', place:'Де ми', phoneLabel:'Телефон', addressLabel:'Адреса', map:'Відкрити на карті', writeTg:'Написати в Telegram', reviews:'Відгуки', social:'Ми в соцмережах', noLink:'посилання ще не додано', photos:'Фото ілюстративні: Unsplash', services:'Послуги', min:'хв', cur:'грн',
-    book:'Записатися', next:'Далі', back:'Назад', confirm:'Підтвердити запис', done:'Ви записані', cancel:'Скасувати запис', cancelled:'Запис скасовано',
-    empty:'Вільного часу немає, оберіть інший день', taken:'Цей час уже зайнятий, оберіть інший', error:'Не вдалося. Спробуйте ще раз',
-    service:'Оберіть послугу', master:'Оберіть майстра', time:'Оберіть день і час', contact:'Ваші дані', name:"Ім'я", phone:'Телефон', fill:"Вкажіть ім'я та телефон (щонайменше 9 цифр)",
-    link:'Збережіть посилання, щоб скасувати запис:', home:'На головну', notFound:'Запис не знайдено' },
-  ru: { demo:'Демо: это не официальный сайт салона', other:'Українська', hours:'Ежедневно', team:'Наши мастера', place:'Где мы', phoneLabel:'Телефон', addressLabel:'Адрес', map:'Открыть на карте', writeTg:'Написать в Telegram', reviews:'Отзывы', social:'Мы в соцсетях', noLink:'ссылка ещё не добавлена', photos:'Фото иллюстративные: Unsplash', services:'Услуги', min:'мин', cur:'грн',
-    book:'Записаться', next:'Далее', back:'Назад', confirm:'Подтвердить запись', done:'Вы записаны', cancel:'Отменить запись', cancelled:'Запись отменена',
-    empty:'Свободного времени нет, выберите другой день', taken:'Это время уже занято, выберите другое', error:'Не получилось. Попробуйте ещё раз',
-    service:'Выберите услугу', master:'Выберите мастера', time:'Выберите день и время', contact:'Ваши данные', name:'Имя', phone:'Телефон', fill:'Укажите имя и телефон (не меньше 9 цифр)',
-    link:'Сохраните ссылку, чтобы отменить запись:', home:'На главную', notFound:'Запись не найдена' }
+  uk: { other:'Рус', demo:'Демо: це не офіційний сайт салону', prices:'Ціни', visit:'Де і коли', book:'Записатися', bookTel:'Записатися телефоном', call:'Подзвонити', route:'Маршрут', open:'Відчинено до', closed:'Зараз зачинено', daily:'Щодня', until:'до', reviews:'відгуків у Google', address:'Адреса', hours:'Графік', phone:'Телефон', min:'хв', cur:'грн', ask:'уточнюйте',
+        note:'Макет від vwebstudio для власника салону. Фото ілюстративні: Unsplash. Графік і ціни перевірте в салоні.' },
+  ru: { other:'Укр', demo:'Демо: это не официальный сайт салона', prices:'Цены', visit:'Где и когда', book:'Записаться', bookTel:'Записаться по телефону', call:'Позвонить', route:'Маршрут', open:'Открыто до', closed:'Сейчас закрыто', daily:'Ежедневно', until:'до', reviews:'отзывов в Google', address:'Адрес', hours:'График', phone:'Телефон', min:'мин', cur:'грн', ask:'уточняйте',
+        note:'Макет от vwebstudio для владельца салона. Фото иллюстративные: Unsplash. График и цены проверьте в салоне.' }
 };
-
 let lang = 'uk';
-try { if (localStorage.getItem('lang') === 'ru') lang = 'ru'; } catch (e) {}
-let screen = 'home', error = '', draft = {}, lastId = '';
-
 const t = k => T[lang][k];
-const app = document.getElementById('app');
-// Демо: записи зберігаються лише в цьому браузері
-const load = () => JSON.parse(localStorage.getItem('bookings-airborne') || '[]');
-const save = list => localStorage.setItem('bookings-airborne', JSON.stringify(list));
-const service = id => DB.services.find(s => s.id === id);
-const master = id => DB.masters.find(m => m.id === id);
-const pad = n => String(n).padStart(2, '0');
-const hhmm = m => pad(Math.floor(m / 60)) + ':' + pad(m % 60);
-const dayKey = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-const dayLabel = key => new Date(key + 'T00:00').toLocaleDateString(lang === 'uk' ? 'uk-UA' : 'ru-RU', { weekday:'short', day:'numeric', month:'short' });
+const el = (tag, props = {}, ...kids) => { const n = Object.assign(document.createElement(tag), props); n.append(...kids.filter(Boolean)); return n; };
+const txt = (tag, textContent, className = '') => el(tag, { textContent, className });
+const out = (textContent, href, className = '') => el('a', { textContent, href, className, target:'_blank', rel:'noopener' });
+const img = (id, w, lazy = true) => el('img', { src:`https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=75`, alt:'', loading:lazy ? 'lazy' : 'eager' });
+const tel = 'tel:+38' + S.phone.replace(/\D/g, '');
+const maps = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(S.name + ' ' + S.address);
+const hh = h => h + ':00';
 
-function slots(date) {
-  const dur = service(draft.service).min, now = new Date(), result = [];
-  const busy = load().filter(b => b.master === draft.master && b.date === date && b.status === 'booked');
-  for (let m = SALON.open * 60; m + dur <= SALON.close * 60; m += 30) {
-    if (date === dayKey(now) && m <= now.getHours() * 60 + now.getMinutes()) continue;
-    if (busy.some(b => m < b.start + b.min && b.start < m + dur)) continue;
-    result.push(m);
-  }
-  return result;
-}
-
-function el(tag, props = {}, ...children) {
-  const node = Object.assign(document.createElement(tag), props);
-  node.append(...children.filter(Boolean));
-  return node;
-}
-const button = (text, onclick, cls = '') => el('button', { type:'button', textContent:text, onclick, className:cls });
-const go = name => { screen = name; error = ''; render(); window.scrollTo(0, 0); };
-const option = (left, right, selected, onclick) => {
-  const b = el('button', { type:'button', className:'option', onclick }, el('span', { textContent:left }), el('span', { textContent:right }));
-  b.setAttribute('aria-pressed', selected);
-  return b;
-};
-const price = s => s.price ? `${s.price} ${t('cur')} · ${s.min} ${t('min')}` : (lang === 'uk' ? 'ціну уточнюйте' : 'цену уточняйте');
-const summary = b => el('div', { className:'card' },
-  el('p', { textContent:`${service(b.service)[lang]} · ${price(service(b.service))}` }),
-  el('p', { textContent:master(b.master)[lang] }),
-  el('p', { textContent:`${dayLabel(b.date)}, ${hhmm(b.start)}` }));
-
-const screens = {
-  home: () => {
-    const info = DB.info, address = info['address_' + lang];
-    const digits = info.phone.replace(/[^\d+]/g, ''), tg = info.telegram.replace(/^.*t\.me\/|@/g, '').replace(/\W/g, '');
-    const link = (textContent, href) => el('a', { textContent, href, target:'_blank', rel:'noopener' });
-    const h = (tag, textContent) => el(tag, { textContent });
-    const book = () => button(t('book'), startBooking, 'primary');
-    const fact = (label, value) => el('div', {}, h('dt', label), el('dd', {}, value));
-    const social = DB.social.on ? DB.social.items.map(s => {
-      const url = s.url.trim();
-      // всё без http(s) получает https://, чтобы нельзя было вставить javascript:
-      return url ? link(s.name, /^https?:\/\//i.test(url) ? url : 'https://' + url) : el('span', { textContent:`${s.name}: ${t('noLink')}` });
-    }) : [];
-    return [
-      el('div', { className:'hero' },
-        photo(DB.photos.hero, PHOTOS.hero, 1920, '', 'eager'),
-        el('div', {},
-          h('h1', info['name_' + lang]),
-          h('p', info['about_' + lang]),
-          el('p', { className:'meta', textContent:`${address} · ${t('hours')} ${SALON.open}:00–${SALON.close}:00` }))),
-      el('section', { id:'services', className:'split' },
-        photo(DB.photos.tools, PHOTOS.tools, 900, 'shot'),
-        el('div', {}, h('h2', t('services')),
-          el('ul', { className:'menu' }, ...SERVICES.map(s => el('li', {},
-            el('button', { type:'button', onclick:() => { draft = { service:s.id }; go('service'); } },
-              el('span', { className:'line' },
-                el('span', { className:'name', textContent:s[lang] }),
-                el('span', { className:'dots' }),
-                el('span', { className:'cost', textContent:s.price ? `${s.price} ${t('cur')}` : (lang === 'uk' ? 'уточнюйте' : 'уточняйте') })),
-              el('span', { className:'dur', textContent:s.price ? `${s.min} ${t('min')}` : '' }))))),
-          book())),
-      el('section', { id:'team' }, h('h2', t('team')),
-        el('div', { className:'masters' }, ...MASTERS.map((m, i) => el('figure', {},
-          photo(m.photo, PHOTOS.masters[i % PHOTOS.masters.length], 700),
-          el('figcaption', {}, h('h3', m[lang]), h('p', m['about_' + lang] || '')))))),
-      DB.reviews.on && DB.reviews.items.length &&
-        el('section', { id:'reviews', className:'quotes' }, h('h2', t('reviews')),
-          el('div', { className:'list' }, ...DB.reviews.items.map(r => el('blockquote', {}, h('p', r.text), h('cite', r.author))))),
-      el('section', { id:'place', className:'split' },
-        el('div', {}, h('h2', t('place')),
-          el('dl', { className:'facts' },
-            fact(t('addressLabel'), address),
-            fact(t('hours'), `${SALON.open}:00–${SALON.close}:00`),
-            // номер-заглушка с XX не превращается в ссылку
-            fact(t('phoneLabel'), digits.replace('+', '').length >= 9 ? el('a', { textContent:info.phone, href:'tel:' + digits }) : info.phone)),
-          el('div', { className:'links' },
-            link(t('map'), 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address)),
-            tg && link(t('writeTg'), 'https://t.me/' + tg)),
-          social.length && h('h3', t('social')),
-          social.length && el('div', { className:'links' }, ...social)),
-        photo(DB.photos.chair, PHOTOS.chair, 900, 'shot'))
-    ].filter(Boolean);
-  },
-  service: () => [
-    el('h2', { textContent:t('service') }),
-    ...SERVICES.map(s => option(s[lang], price(s), draft.service === s.id, () => { draft.service = s.id; delete draft.start; render(); })),
-    draft.service && button(t('next'), () => {
-      if (MASTERS.length === 1) { draft.master = MASTERS[0].id; go('time'); } else go('master');
-    }, 'primary'),
-    button(t('back'), () => go('home'), 'ghost')
-  ],
-  master: () => [
-    el('h2', { textContent:t('master') }),
-    ...MASTERS.map(m => option(m[lang], '', draft.master === m.id, () => { draft.master = m.id; delete draft.start; render(); })),
-    draft.master && button(t('next'), () => go('time'), 'primary'),
-    button(t('back'), () => go('service'), 'ghost')
-  ],
-  time: () => {
-    const days = Array.from({ length:SALON.daysAhead }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return dayKey(d); });
-    draft.date = draft.date || days[0];
-    const select = el('select', { onchange: e => { draft.date = e.target.value; delete draft.start; error = ''; render(); } },
-      ...days.map(d => el('option', { value:d, textContent:dayLabel(d), selected:d === draft.date })));
-    select.style.cssText = 'width:100%;padding:12px;border-radius:12px;background:var(--card);color:var(--text);font:inherit;margin-bottom:12px';
-    const free = slots(draft.date);
-    return [
-      el('h2', { textContent:t('time') }), select,
-      free.length
-        ? el('div', { className:'grid' }, ...free.map(m => {
-            const b = button(hhmm(m), () => { draft.start = m; error = ''; render(); });
-            b.setAttribute('aria-pressed', draft.start === m);
-            return b;
-          }))
-        : el('p', { textContent:t('empty') }),
-      free.includes(draft.start) && button(t('next'), () => go('contact'), 'primary'),
-      button(t('back'), () => go(MASTERS.length === 1 ? 'service' : 'master'), 'ghost')
-    ];
-  },
-  contact: () => {
-    return [
-      el('h2', { textContent:lang === 'uk' ? 'Це макет' : 'Это макет' }),
-      el('p', { textContent:lang === 'uk' ? 'Це тимчасово: онлайн-запис ще не підключено, тому запис не створено. Щоб записатися, зателефонуйте в салон:' : 'Это временно: онлайн-запись ещё не подключена, поэтому запись не создана. Чтобы записаться, позвоните в салон:' }),
-      el('p', {}, el('a', { textContent:DB.info.phone, href:'tel:' + DB.info.phone.replace(/\s/g, '') })),
-      button(t('back'), () => go('time'), 'ghost')
-    ];
-    const field = (key, type) => el('label', { textContent:t(key) },
-      el('input', { type, value:draft[key] || '', autocomplete:type === 'tel' ? 'tel' : 'name', maxLength:60, oninput:e => draft[key] = e.target.value }));
-    return [
-      el('h2', { textContent:t('contact') }),
-      summary(draft), field('name', 'text'), field('phone', 'tel'),
-      button(t('confirm'), confirmBooking, 'primary'),
-      button(t('back'), () => go('time'), 'ghost')
-    ];
-  },
-  done: () => {
-    const b = load().find(x => x.id === lastId);
-    const url = location.href.split('#')[0] + '#cancel=' + b.id;
-    return [
-      el('h1', { textContent:t('done') }), summary(b),
-      el('p', { textContent:t('link') }), el('a', { href:url, textContent:url }),
-      button(t('home'), () => go('home'), 'ghost')
-    ];
-  },
-  cancel: () => {
-    const b = load().find(x => x.id === lastId);
-    const home = button(t('home'), () => { history.replaceState(null, '', location.pathname); go('home'); }, 'ghost');
-    if (!b) return [ el('h2', { textContent:t('notFound') }), home ];
-    if (b.status === 'cancelled') return [ el('h2', { textContent:t('cancelled') }), summary(b), home ];
-    return [
-      el('h2', { textContent:t('cancel') }), summary(b),
-      button(t('cancel'), () => {
-        try { save(load().map(x => x.id === b.id ? { ...x, status:'cancelled' } : x)); error = ''; }
-        catch (e) { error = 'error'; }
-        render();
-      }, 'primary'),
-      home
-    ];
-  }
-};
-
-function confirmBooking() {
-  const name = (draft.name || '').trim(), phone = (draft.phone || '').trim();
-  if (!name || phone.replace(/\D/g, '').length < 9) { error = 'fill'; return render(); }
-  try {
-    if (!slots(draft.date).includes(draft.start)) { delete draft.start; screen = 'time'; error = 'taken'; return render(); }
-    lastId = Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
-    save([...load(), { id:lastId, service:draft.service, master:draft.master, date:draft.date, start:draft.start,
-      min:service(draft.service).min, name, phone, status:'booked' }]);
-    draft = {};
-    go('done');
-  } catch (e) { error = 'error'; render(); }
-}
-
-const photo = (own, stock, width, className = '', loading = 'lazy') =>
-  el('img', { loading, className, alt:'', src:own || stockUrl(stock, width) });
-const startBooking = () => { draft = {}; go('service'); };
-function scrollToSection(id) {
-  if (screen !== 'home') { history.replaceState(null, '', location.pathname); go('home'); }
-  document.getElementById(id)?.scrollIntoView();
-}
-function renderChrome() {
-  const items = [['services', 'services'], ['team', 'team'],
-    DB.reviews.on && DB.reviews.items.length && ['reviews', 'reviews'], ['place', 'place']].filter(Boolean);
-  document.getElementById('brand').textContent = DB.info['name_' + lang];
-  document.getElementById('nav').replaceChildren(...items.map(([id, key]) => button(t(key), () => scrollToSection(id))));
-  document.getElementById('foot').replaceChildren(
-    el('strong', { textContent:DB.info['name_' + lang] }),
-    el('p', { textContent:`${DB.info['address_' + lang]} · ${DB.info.phone}` }),
-    el('p', { textContent:lang === 'uk' ? 'Макет від vwebstudio для власника салону. Онлайн-запис не працює.' : 'Макет от vwebstudio для владельца салона. Онлайн-запись не работает.' }),
-    // подпись про Unsplash нужна, только пока хоть одно фото стоковое
-    ...(Object.values(DB.photos).every(Boolean) && MASTERS.every(m => m.photo) ? [] : [el('p', { textContent:t('photos') })]));
-  app.className = screen === 'home' ? '' : 'narrow';
+// статус по киевскому времени; если час открытия неизвестен, статус не показываем
+function status() {
+  if (S.open === null) return null;
+  const h = Number(new Intl.DateTimeFormat('en-GB', { hour:'numeric', hour12:false, timeZone:'Europe/Kyiv' }).format(new Date()));
+  const isOpen = h >= S.open && h < S.close;
+  return el('span', { className:'chip' }, el('span', { className:isOpen ? 'dot' : 'dot closed' }), isOpen ? `${t('open')} ${hh(S.close)}` : t('closed'));
 }
 
 function render() {
-  renderChrome();
   document.documentElement.lang = lang;
-  document.getElementById('demo').textContent = t('demo');
-  document.getElementById('lang').textContent = t('other');
-  try {
-    app.replaceChildren(...screens[screen]().filter(Boolean));
-  } catch (e) {
-    app.replaceChildren(el('p', { textContent:t('error') }));
-  }
-  if (error) app.append(el('p', { className:'error', textContent:t(error), role:'alert' }));
+  const hours = S.open === null ? `${t('daily')} ${t('until')} ${hh(S.close)}` : `${t('daily')} ${hh(S.open)}–${hh(S.close)}`;
+  const toggle = el('button', { type:'button', textContent:t('other'), onclick:() => { lang = lang === 'uk' ? 'ru' : 'uk'; render(); } });
+  const fact = (label, value) => el('div', {}, txt('dt', label), el('dd', {}, value));
+  document.getElementById('app').replaceChildren(
+    el('header', {},
+      el('div', { className:'brand' }, S.name, txt('small', t('demo'))),
+      el('nav', {}, el('a', { href:'#prices', textContent:t('prices') }), el('a', { href:'#visit', textContent:t('visit') }), el('a', { href:tel, textContent:S.phone })),
+      toggle),
+    el('main', {},
+      el('div', { className:'hero' },
+        img(S.photos[0], 1920, false),
+        txt('h1', S.name),
+        txt('p', S.lead[lang], 'lead'),
+        el('div', { className:'chips' }, status(),
+          out('', maps, 'chip'),
+          txt('span', hours, 'chip'))),
+      el('section', { id:'prices', className:'split' },
+        txt('h2', t('prices')),
+        el('div', { className:'prices' },
+          ...S.groups.flatMap(g => [g.name && txt('h3', g.name[lang]),
+            ...g.items.map(([uk, ru, price, min]) => el('div', { className:'row' },
+              txt('span', lang === 'uk' ? uk : ru, 'name'),
+              txt('span', price === null ? '' : `${min} ${t('min')}`, 'time'),
+              txt('span', price === null ? t('ask') : `${price.toLocaleString('uk-UA')} ${t('cur')}`, 'price')))]).filter(Boolean),
+          S.booking ? out(t('book'), S.booking, 'cta') : el('a', { className:'cta', href:tel, textContent:t('bookTel') }))),
+      el('div', { className:'strip' }, ...S.photos.slice(1).map(id => img(id, 800))),
+      el('section', { id:'visit' },
+        txt('h2', t('visit')),
+        el('div', { className:'visit' },
+          el('dl', {}, fact(t('address'), out(S.address, maps)), fact(t('hours'), hours), fact(t('phone'), el('a', { href:tel, textContent:S.phone })),
+            S.instagram && fact('Instagram', out('@' + S.instagram, 'https://www.instagram.com/' + S.instagram + '/'))),
+          el('iframe', { src:'https://maps.google.com/maps?q=' + encodeURIComponent(S.address) + '&z=16&output=embed', title:t('address'), loading:'lazy' })))),
+    el('footer', {}, txt('strong', S.name), txt('p', `${S.address} · ${S.phone}`), txt('p', t('demo') + '. ' + t('note'))),
+    el('div', { className:'bar' }, el('a', { href:tel, textContent:t('call') }), out(t('route'), maps)));
+  const rating = document.querySelector('.chips a');
+  rating.replaceChildren(txt('span', '★', 'star'), `${S.rating} · ${S.count} ${t('reviews')}`);
 }
-
-function route() {
-  const match = location.hash.match(/^#cancel=(\w+)$/);
-  if (match) { lastId = match[1]; screen = 'cancel'; }
-  error = '';
-  render();
-}
-
-document.getElementById('lang').onclick = () => {
-  lang = lang === 'uk' ? 'ru' : 'uk';
-  try { localStorage.setItem('lang', lang); } catch (e) {}
-  render();
-};
-window.addEventListener('hashchange', route);
-route();
+render();
 </script>
 </body>
 </html>
